@@ -353,7 +353,7 @@ def on_button_click():
 
         run_button.configure(state="enabled")
     else:
-        message = "Please select a model and the input audio file"
+        message = "Please select a model and aan input audio file"
         run_button.configure(state="enabled")
         result_state.configure(text_color="red")
 
