@@ -3,7 +3,7 @@
 <h1>RVC GUI is a fork of RVC "Retrieval-based-Voice-Conversion-WebUI"
 <br><br>
   
-# It is for audio file infernce only
+for audio file inference only
 
   <br>
 
