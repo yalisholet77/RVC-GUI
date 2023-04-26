@@ -61,13 +61,25 @@ Then use this command to start RVC GUI:
 python rvcgui.py
 ```
 
+# Loading models
+use the import button to import a model from a zip file, 
+* the .zip must contain the ".pth" weight file. 
+* the features files ".index, .npy" are recommended
 
-## Credits
-+ [ContentVec](https://github.com/auspicious3000/contentvec/)
-+ [VITS](https://github.com/jaywalnut310/vits)
-+ [HIFIGAN](https://github.com/jik876/hifi-gan)
-+ [Gradio](https://github.com/gradio-app/gradio)
-+ [FFmpeg](https://github.com/FFmpeg/FFmpeg)
-+ [Ultimate Vocal Remover](https://github.com/Anjok07/ultimatevocalremovergui)
-+ [audio-slicer](https://github.com/openvpi/audio-slicer)
+or place the manually in root/models
+```
+Models
+├───Person1
+│   ├───xxxx.pth
+│   ├───xxxx.index
+│   └───xxxx.npy
+└───Person2
+    ├───xxxx.pth
+    ├───...
+    └───...
+````
+<br>
+
+
+
 
