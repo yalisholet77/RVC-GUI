@@ -2,6 +2,8 @@
 
 <h1>RVC GUI is a fork of RVC "Retrieval-based-Voice-Conversion-WebUI"
 <br><br>
+  
+  ## Voice and audio infering only
 
 
   
