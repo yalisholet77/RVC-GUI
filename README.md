@@ -2,10 +2,11 @@
 
 <h1>RVC GUI is a fork of RVC "Retrieval-based-Voice-Conversion-WebUI"
 <br><br>
-
-[![madewithlove](https://forthebadge.com/images/badges/built-with-love.svg)](https://github.com/liujing04/Retrieval-based-Voice-Conversion-WebUI)
   
-<img src="https://counter.seku.su/cmoe?name=rvc&theme=r34" /><br>
+It is for voice and audio inferring only
+
+  <br>
+
   
 [![Licence](https://img.shields.io/github/license/liujing04/Retrieval-based-Voice-Conversion-WebUI?style=for-the-badge)](https://github.com/liujing04/Retrieval-based-Voice-Conversion-WebUI/blob/main/%E4%BD%BF%E7%94%A8%E9%9C%80%E9%81%B5%E5%AE%88%E7%9A%84%E5%8D%8F%E8%AE%AE-LICENSE.txt)
 [![Huggingface](https://img.shields.io/badge/🤗%20-Spaces-yellow.svg?style=for-the-badge)](https://huggingface.co/lj1995/VoiceConversionWebUI/tree/main/)
@@ -14,8 +15,17 @@
 
 </div>
 
+  
 
 
+  <br>
+  
+## GUI
+
+![GUI](https://github.com/Tiger14n/RVC-GUI/raw/main/docs/GUI1.JPG)
+  
+  
+<br><br>
 ## Preparing the environment
 
 
