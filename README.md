@@ -3,7 +3,7 @@
 <h1>RVC GUI is a fork of RVC "Retrieval-based-Voice-Conversion-WebUI"
 <br><br>
 
-[![madewithlove](https://forthebadge.com/images/badges/built-with-love.svg)](https://github.com/liujing04/Retrieval-based-Voice-Conversion-WebUI)
+
   
 <img src="https://counter.seku.su/cmoe?name=rvc&theme=r34" /><br>
   
@@ -14,7 +14,9 @@
 
 </div>
 
+#### GUI
 
+![GUI](https://github.com/Tiger14n/RVC-GUI/raw/main/docs/GUI1.JPG)
 
 ## Preparing the environment
 
