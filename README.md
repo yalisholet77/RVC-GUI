@@ -52,10 +52,8 @@ pip install -r requirements.txt
 
 Downlaod [hubert_base.pt](https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt/) and place it in the root folder
 
-```
-#If you are using Windows, you may also need this dictionary, skip if FFmpeg is installed
-ffmpeg.exe
-```
+<br>
+  
 Then use this command to start RVC GUI:
 ```bash
 python rvcgui.py
