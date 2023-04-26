@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>RVC GUI is a fork RVC "Retrieval-based-Voice-Conversion-WebUI"/h1>
+<h1>RVC GUI is a fork of RVC "Retrieval-based-Voice-Conversion-WebUI"
 <br><br>
 
 [![madewithlove](https://forthebadge.com/images/badges/built-with-love.svg)](https://github.com/liujing04/Retrieval-based-Voice-Conversion-WebUI)
@@ -14,23 +14,8 @@
 
 </div>
 
-------
 
 
-
-> Realtime Voice Conversion Software using RVC : [w-okada/voice-changer](https://github.com/w-okada/voice-changer)
-
-> The dataset for the pre-training model uses nearly 50 hours of high quality VCTK open source dataset.
-
-> High quality licensed song datasets will be added to training-set one after another for your use, without worrying about copyright infringement.
-## Summary
-This repository has the following features:
-+ Reduce tone leakage by replacing source feature to training-set feature using top1 retrieval;
-+ Easy and fast training, even on relatively poor graphics cards;
-+ Training with a small amount of data also obtains relatively good results (>=10min low noise speech recommended);
-+ Supporting model fusion to change timbres (using ckpt processing tab->ckpt merge);
-+ Easy-to-use Webui interface;
-+ Use the UVR5 model to quickly separate vocals and instruments.
 ## Preparing the environment
 
 
@@ -55,12 +40,13 @@ pip install -U torch torchaudio --index-url https://download.pytorch.org/whl/cu1
 pip install -r requirements.txt
 ```
 
-Downlaod [hubert_base.pt](https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt/) and place it in the root
+Downlaod [hubert_base.pt](https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt/) and place it in the root folder
 
+```
 #If you are using Windows, you may also need this dictionary, skip if FFmpeg is installed
 ffmpeg.exe
 ```
-Then use this command to start Webui:
+Then use this command to start RVC GUI:
 ```bash
 python rvcgui.py
 ```
@@ -74,6 +60,4 @@ python rvcgui.py
 + [FFmpeg](https://github.com/FFmpeg/FFmpeg)
 + [Ultimate Vocal Remover](https://github.com/Anjok07/ultimatevocalremovergui)
 + [audio-slicer](https://github.com/openvpi/audio-slicer)
-## Thanks to all contributors for their efforts
-
 
