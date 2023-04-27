@@ -303,8 +303,28 @@ def browse_zip():
     extract_model_from_zip(zip_file, models_dir)
     refresh_model_list()
     
+def get_output_path(file_path):
+    print(file_path)
+    if not os.path.exists(file_path):
+        return file_path  # File path does not exist, return as is
+
+    # Split file path into directory, base filename, and extension
+    dir_name, file_name = os.path.split(file_path)
+    file_name, file_ext = os.path.splitext(file_name)
+
+    # Initialize index to 1
+    index = 1
+
+    # Increment index until a new file path is found
+    while True:
+        new_file_name = f"{file_name}_RVC_{index}{file_ext}"
+        new_file_path = os.path.join(dir_name, new_file_name)
+        if not os.path.exists(new_file_path):
+            return new_file_path  # Found new file path, return it
+        index += 1
+    
 def on_button_click():
-    play_audio_frame.pack_forget()
+    output_audio_frame.pack_forget()
     result_state.pack_forget()
     run_button.configure(state="disabled")
 
@@ -317,14 +337,12 @@ def on_button_click():
     file_index = file_index_entry.get()
     file_big_npy = file_big_npy_entry.get()
     index_rate = round(index_rate_entry.get(),2)
-    filename = os.path.splitext(os.path.basename(input_audio))[0]
-    output_file_tmp = "./output/" + outputkey() + "_" + filename + ".wav"
     global output_file
-    output_file = get_full_path(output_file_tmp)
+    output_file = get_output_path(input_audio)
     print("sid: ", sid, "input_audio: ", input_audio, "f0_pitch: ", f0_pitch, "f0_file: ", f0_file, "f0_method: ", f0_method,
           "file_index: ", file_index, "file_big_npy: ", file_big_npy, "index_rate: ", index_rate, "output_file: ", output_file)
     # Call the vc_single function with the user input values
-    if model_loaded == True and input_audio != "":
+    if model_loaded == True and os.path.isfile(input_audio):
         try:
             loading_progress.pack(padx=10, pady=10)
             loading_progress.start()
@@ -332,16 +350,17 @@ def on_button_click():
             result, audio_opt = vc_single(
                 0, input_audio, f0_pitch, None, f0_method, file_index, file_big_npy, index_rate, output_file)
             # output_label.configure(text=result + "\n saved at" + output_file)
+            print(os.path.join(output_file))
             if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
-              last_output_file.configure(text=output_file)
-              play_audio_frame.pack(padx=10, pady=10)
+              print(output_file) 
+              
               run_button.configure(state="enabled")
-              message = "Voice conversion completed"
+              message = result
               result_state.configure(text_color="green")
               last_output_file.configure(text=output_file)
-              play_audio_frame.pack(padx=10, pady=10)
+              output_audio_frame.pack(padx=10, pady=10)
             else: 
-              message = "Voice conversion failed, might be cuda out of memory, Try using CPU mode if this happens again"
+              message = result
               result_state.configure(text_color="red")
 
         except Exception as e:
@@ -353,7 +372,7 @@ def on_button_click():
 
         run_button.configure(state="enabled")
     else:
-        message = "Please select a model and aan input audio file"
+        message = "Please select a model and input audio file"
         run_button.configure(state="enabled")
         result_state.configure(text_color="red")
 
@@ -365,8 +384,9 @@ def on_button_click():
 
 def browse_file():
     filepath = filedialog.askopenfilename(
-        filetypes=[("Audio Files", "*.wav;*.mp3;*.ogg")])
-    input_audio_entry.delete(0, ctk.END)
+        filetypes=[("Audio Files", "*.wav;*.mp3")])
+    filepath = os.path.normpath(filepath)  # Normalize file path
+    input_audio_entry.delete(0, tk.END)
     input_audio_entry.insert(0, filepath)
 
 
@@ -390,7 +410,7 @@ def selected_model(choice):
 
     file_index_entry.delete(0, ctk.END)
     file_big_npy_entry.delete(0, ctk.END)
-    model_dir = os.path.join(models_dir, choice)
+    model_dir = os.path.normpath(os.path.join(models_dir, choice))
     pth_file = [f for f in os.listdir(model_dir) if os.path.isfile(
         os.path.join(model_dir, f)) and f.endswith(".pth")]
     if pth_file:
@@ -426,7 +446,7 @@ def selected_model(choice):
 
 def index_slider_event(value):
     index_rate_label.configure(
-        text='Feature Retrieval Rate: %s' % round(value, 2))
+        text='Feature retrieval rate: %s' % round(value, 2))
    # print(value)
 
 
@@ -449,15 +469,17 @@ def update_config(selected):
         get_vc(pth_file_path, 0)
 
 
+models_dir = "./models"
+model_folders = [f for f in os.listdir(models_dir) if os.path.isdir(os.path.join(
+    models_dir, f)) and any(f.endswith(".pth") for f in os.listdir(os.path.join(models_dir, f)))]
+
+
 master_frame = ctk.CTkFrame(master=root, height=500)
 master_frame.pack(padx=5, pady=5)
 
 
 left_frame = ctk.CTkFrame(master=master_frame, )
 left_frame.grid(row=0, column=0, padx=10,  pady=10, sticky="nsew")
-
-# middle_frame = MyFrame(master=master_frame, width=200, height=200)
-# middle_frame.grid(padx=0, pady=0, side="right")
 
 right_frame = ctk.CTkFrame(master=master_frame, )
 right_frame.grid(row=0, column=1, pady=10, padx=10, sticky="nsew")
@@ -467,7 +489,7 @@ inputpath_frame = ctk.CTkFrame(master=left_frame)
 inputpath_frame.grid(row=0, column=0, padx=15, pady=10, sticky="nsew")
 
 
-play_audio_frame = ctk.CTkFrame(master=root)
+output_audio_frame = ctk.CTkFrame(master=root)
 
 select_model_frame = ctk.CTkFrame(left_frame)
 select_model_frame.grid(row=1, column=0, padx=15, pady=10, sticky="nsew")
@@ -475,108 +497,81 @@ select_model_frame.grid(row=1, column=0, padx=15, pady=10, sticky="nsew")
 pitch_frame = ctk.CTkFrame(left_frame)
 pitch_frame.grid(row=3, column=0, padx=10, pady=5, sticky="nsew")
 
-sid_label = ctk.CTkLabel(select_model_frame, text="Speaker ID: ")
+
+
+# Get the list of .pth files in the models directory
+
+
+
+sid_label = ctk.CTkLabel(select_model_frame, text="Speaker ID:")
 sid_entry = ctk.CTkEntry(select_model_frame)
 sid_entry.insert(0, "0")
 sid_entry.configure(state="disabled")
 
-# Create a Label and Combobox for models
-
-models_dir = "./models"
-model_folders = [f for f in os.listdir(models_dir) if os.path.isdir(os.path.join(
-    models_dir, f)) and any(f.endswith(".pth") for f in os.listdir(os.path.join(models_dir, f)))]
-
-
-# Get the list of .pth files in the models directory
-config = {"models_directory": "./models", "output_directory": "./output"}
-import json
-
-def open_window():
-    new_window = ctk.CTkToplevel()
-    new_window.title("Configurations")
-    new_window.resizable(False, False)
-    new_window.geometry("500x500")
-    new_window.wm_attributes("-topmost", 1)  # Set new window on top of all other windows
-    root.wm_attributes("-topmost", 1)  # Set new window on top of all other windows
-    new_window.protocol("WM_DELETE_WINDOW", lambda: close_window(new_window))
-    root.wm_attributes("-disabled", 1)  # Disable main window
-    # Center the new window on the main window
-    main_window_width = root.winfo_reqwidth()
-    main_window_height = root.winfo_reqheight()
-    new_window_width = new_window.winfo_reqwidth()
-    new_window_height = new_window.winfo_reqheight()
-    x = root.winfo_x() + (main_window_width - new_window_width) // 2
-    y = root.winfo_y() + (main_window_height - new_window_height) // 2
-    new_window.geometry("+{}+{}".format(x, y))
-    new_window.lift()
-    new_window.grab_set()
-    
-    save_button = ctk.CTkButton(new_window, text="Save configuration", command=lambda: save_configuration(new_window))
-    save_button.pack(pady=10)
-    def save_configuration(new_window):
-     with open("config.json", "w") as config_file:
-        json.dump(config, config_file)
-     close_window(new_window)
-    
-def close_window(new_window):
-    root.wm_attributes("-topmost", 0) 
-    new_window.wm_attributes("-topmost", 0)  # Remove new window from top of all other windows
-    root.wm_attributes("-disabled", 0)  # Re-enable main window
-    new_window.destroy()  
-    root.deiconify()  # Restore main window to normal state
-# a file selection feild to browese the system and select an audio file for the input audio
-    # Add button to select models directory
-    
-
-
+# intiilizing model select widget
 select_model = ctk.StringVar(value="Select a model")
 model_list = ctk.CTkOptionMenu(select_model_frame, values=model_folders,
                                command=selected_model,
                                variable=select_model
                                )
 
-    
-    
-input_audio_label = ctk.CTkLabel(inputpath_frame, text="Input Audio File")
+# intiilizing audio file input widget
+input_audio_label = ctk.CTkLabel(inputpath_frame, text="Input audio file:")
 browse_button = ctk.CTkButton(
     inputpath_frame, text="Browse", command=browse_file)
-
-
 input_audio_entry = ctk.CTkEntry(inputpath_frame)
+
+#  intiilizing pitch widget
 f0_pitch_label = ctk.CTkLabel(pitch_frame, text="Pitch: 0")
 f0_pitch_entry = ctk.CTkSlider(
     pitch_frame, from_=-20, to=20, number_of_steps=100, command=pitch_slider_event, )
 f0_pitch_entry.set(0)
-f0_file_label = ctk.CTkLabel(right_frame, text="F0 File (optional)")
+
+# intiilizing f0 file widget
+f0_file_label = ctk.CTkLabel(right_frame, text="F0 file (Optional/Not Tested)")
 f0_file_entry = ctk.CTkEntry(right_frame, width=250)
+
+# intiilizing f0 method widget
 f0_method_label = ctk.CTkLabel(
-    pitch_frame, text="F0 Method")
+    pitch_frame, text="F0 method")
 f0_method_entry = ctk.CTkSegmentedButton(
     pitch_frame, height=40, values=["harvest", "pm"])
 f0_method_entry.set("harvest")
+
+# intiilizing index file widget
 file_index_label = ctk.CTkLabel(right_frame, text=".index File (Recommended)")
 file_index_entry = ctk.CTkEntry(right_frame, width=250)
+
+# intiilizing big npy file widget
 file_big_npy_label = ctk.CTkLabel(right_frame, text=".npy File (Recommended)")
 file_big_npy_entry = ctk.CTkEntry(right_frame, width=250)
+
+# intiilizing index rate widget
 index_rate_entry = ctk.CTkSlider(
     right_frame, from_=0, to=1, number_of_steps=20, command=index_slider_event, )
 index_rate_entry.set(0.4)
 index_rate_label = ctk.CTkLabel(
-    right_frame, text="Feature Retrieval Rate: 0.4" )
+    right_frame, text="Feature retrieval rate: 0.4" )
+
+# intiilizing run button widget
 run_button = ctk.CTkButton(
-    left_frame, fg_color="green", hover_color="darkgreen", text="Convert Voice", command=start_processing)
+    left_frame, fg_color="green", hover_color="darkgreen", text="Convert voice", command=start_processing)
+
+# intiilizing output label widget
 output_label = ctk.CTkLabel(right_frame, text="")
+
+# intiilizing loading progress bar widget
 loading_progress = ctk.CTkProgressBar(master=root, width=200)
 loading_progress.configure(mode="indeterminate")
+
+# intiilizing result state label widget
 result_state = ctk.CTkLabel(
     root, text="", fg_color="#1C1C1C", height=50, width=100, corner_radius=10)
 
-
-change_device_label = ctk.CTkLabel( right_frame, text="Processing Device")
-change_device_label.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
+# intiilizing change device widget
+change_device_label = ctk.CTkLabel( right_frame, text="Processing device")
 change_device = ctk.CTkSegmentedButton(
     right_frame, command=lambda value: update_config(value))
-change_device.grid(row=2, column=0, columnspan=2, padx=10, pady=5)
 change_device.configure(
     values=["GPU", "CPU"])
 
@@ -586,27 +581,29 @@ if "cpu" in device.type.lower() or device.type.lower() == "cpu":
    
 else:
     change_device.set("GPU")
-    
-   
- 
 
+# intiilizing last output label & open output button widget
+last_output_label = ctk.CTkLabel(output_audio_frame, text="Output path: ")
+last_output_file = ctk.CTkLabel(output_audio_frame, text="", text_color="green")
+open_output_button = ctk.CTkButton(output_audio_frame, text="Open", command=lambda: play_audio(output_file))
 
-
-last_output_label = ctk.CTkLabel(play_audio_frame, text="Output path: ")
-last_output_label.grid(padx=8, pady=10, row=0, column=0)
-last_output_file = ctk.CTkLabel(play_audio_frame, text="", text_color="green")
-last_output_file.grid(padx=8, pady=10, row=0, column=1)
-open_output_button = ctk.CTkButton(play_audio_frame, text="Open", command=lambda: play_audio(output_file))
-open_output_button.grid(padx=10, pady=10, row=1, column=1)
-
-
-
+# intiilizing import models button widget
 import_moodels_button = ctk.CTkButton(right_frame, fg_color="darkred", hover_color="black", corner_radius=20, text="Import model from .zip", command=browse_zip)
-import_moodels_button.grid(padx=10, pady=10, row=0, column=0)
+
+
+
 # button = ctk.CTkButton(root, text="Open Window", command=open_window)
 # button.pack()
 
-# Pack widgets into window
+
+
+# Packing widgets into window
+change_device_label.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
+change_device.grid(row=2, column=0, columnspan=2, padx=10, pady=5)
+last_output_label.grid( pady=10, row=0, column=0)
+last_output_file.grid( pady=10, row=0, column=1)
+open_output_button.grid(pady=10, row=1, column=0, columnspan=2)
+import_moodels_button.grid(padx=10, pady=10, row=0, column=0)
 model_list.grid(padx=10, pady=10, row=0, column=2)
 sid_label.grid(padx=10, pady=10, row=0, column=0)
 sid_entry.grid(padx=0, pady=10, row=0, column= 1)
@@ -626,6 +623,6 @@ file_big_npy_entry.grid(padx=10, pady=10)
 index_rate_label.grid(padx=10, pady=10)
 index_rate_entry.grid(padx=10, pady=10)
 run_button.grid(padx=30, pady=30)
-output_label.grid(padx=10, pady=10)
+output_label.grid(padx=0, pady=10)
 
 root.mainloop()
