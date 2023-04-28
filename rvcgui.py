@@ -43,7 +43,7 @@ def extract_model_from_zip(zip_path, output_dir):
 
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         for member in zip_ref.namelist():
-            if member.endswith('.pth') or member.endswith('.npy') or member.endswith('.index'):
+            if member.endswith('.pth') or member.endswith('.index'):
                 # Extract the file to the output folder
                 zip_ref.extract(member, output_folder)
 
@@ -95,7 +95,6 @@ def vc_single(
     f0_file,
     f0_method,
     file_index,
-    file_big_npy,
     index_rate,
     output_path=None,
 ):  # spk_item, input_audio0, vc_transform0,f0_file,f0method0
@@ -117,10 +116,7 @@ def vc_single(
             .strip(" ")
             .replace("trained", "added")
         )  # 防止小白写错，自动帮他替换掉
-        file_big_npy = (
-            file_big_npy.strip(" ").strip('"').strip(
-                "\n").strip('"').strip(" ")
-        )
+     
         audio_opt = vc.pipeline(
             hubert_model,
             net_g,
@@ -130,7 +126,6 @@ def vc_single(
             f0_up_key,
             f0_method,
             file_index,
-            file_big_npy,
             index_rate,
             if_f0,
             f0_file=f0_file,
@@ -157,7 +152,6 @@ def vc_multi(
     f0_up_key,
     f0_method,
     file_index,
-    file_big_npy,
     index_rate,
 ):
     try:
@@ -185,7 +179,6 @@ def vc_multi(
                 None,
                 f0_method,
                 file_index,
-                file_big_npy,
                 index_rate,
             )
             if info == "Success":
@@ -335,12 +328,12 @@ def on_button_click():
     f0_file = f0_file_entry.get()
     f0_method = f0_method_entry.get()
     file_index = file_index_entry.get()
-    file_big_npy = file_big_npy_entry.get()
+    # file_big_npy = file_big_npy_entry.get()
     index_rate = round(index_rate_entry.get(),2)
     global output_file
     output_file = get_output_path(input_audio)
     print("sid: ", sid, "input_audio: ", input_audio, "f0_pitch: ", f0_pitch, "f0_file: ", f0_file, "f0_method: ", f0_method,
-          "file_index: ", file_index, "file_big_npy: ", file_big_npy, "index_rate: ", index_rate, "output_file: ", output_file)
+          "file_index: ", file_index, "file_big_npy: ", "index_rate: ", index_rate, "output_file: ", output_file)
     # Call the vc_single function with the user input values
     if model_loaded == True and os.path.isfile(input_audio):
         try:
@@ -348,7 +341,7 @@ def on_button_click():
             loading_progress.start()
             
             result, audio_opt = vc_single(
-                0, input_audio, f0_pitch, None, f0_method, file_index, file_big_npy, index_rate, output_file)
+                0, input_audio, f0_pitch, None, f0_method, file_index, index_rate, output_file)
             # output_label.configure(text=result + "\n saved at" + output_file)
             print(os.path.join(output_file))
             if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
@@ -409,33 +402,29 @@ model_loaded = False
 def selected_model(choice):
 
     file_index_entry.delete(0, ctk.END)
-    file_big_npy_entry.delete(0, ctk.END)
-    model_dir = os.path.normpath(os.path.join(models_dir, choice))
+   
+    model_dir = os.path.join(models_dir, choice)
     pth_file = [f for f in os.listdir(model_dir) if os.path.isfile(
         os.path.join(model_dir, f)) and f.endswith(".pth")]
     if pth_file:
         global pth_file_path
         pth_file_path = os.path.join(model_dir, pth_file[0])
         npy_files = [f for f in os.listdir(model_dir) if os.path.isfile(
-            os.path.join(model_dir, f)) and (f.endswith(".npy") or f.endswith(".index"))]
+            os.path.join(model_dir, f)) and f.endswith(".index")]
         if npy_files:
             npy_files_dir = [os.path.join(model_dir, f) for f in npy_files]
-            if len(npy_files_dir) == 2:
-                index_file = [
-                    f for f in npy_files_dir if f.endswith(".index")][0]
-                npy_file = [f for f in npy_files_dir if f.endswith(".npy")][0]
+            if len(npy_files_dir) == 1:
+                index_file = npy_files_dir[0]
                 print(f".pth file directory: {pth_file_path}")
                 print(f".index file directory: {index_file}")
-                print(f".npy file directory: {npy_file}")
 
                 file_index_entry.insert(0, index_file)
-                file_big_npy_entry.insert(0, npy_file)
 
             else:
                 print(
-                    f"Incomplete set of .npy and .index files found in {model_dir}")
+                    f"Incomplete set of .index files found in {model_dir}")
         else:
-            print(f"No .npy or .index files found in {model_dir}")
+            print(f"No .index files found in {model_dir}")
 
         get_vc(pth_file_path, 0)
         global model_loaded
@@ -543,8 +532,8 @@ file_index_label = ctk.CTkLabel(right_frame, text=".index File (Recommended)")
 file_index_entry = ctk.CTkEntry(right_frame, width=250)
 
 # intiilizing big npy file widget
-file_big_npy_label = ctk.CTkLabel(right_frame, text=".npy File (Recommended)")
-file_big_npy_entry = ctk.CTkEntry(right_frame, width=250)
+
+
 
 # intiilizing index rate widget
 index_rate_entry = ctk.CTkSlider(
@@ -618,8 +607,8 @@ f0_file_label.grid(padx=10, pady=10)
 f0_file_entry.grid(padx=10, pady=10)
 file_index_label.grid(padx=10, pady=10)
 file_index_entry.grid(padx=10, pady=10)
-file_big_npy_label.grid(padx=10, pady=10)
-file_big_npy_entry.grid(padx=10, pady=10)
+
+
 index_rate_label.grid(padx=10, pady=10)
 index_rate_entry.grid(padx=10, pady=10)
 run_button.grid(padx=30, pady=30)
