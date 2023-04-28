@@ -1,2 +1,2 @@
-python.exe rvcgui.py --pycmd python.exe
+python rvcgui.py --pycmd python
 pause
