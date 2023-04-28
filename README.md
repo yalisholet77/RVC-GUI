@@ -13,7 +13,7 @@ For audio file inference only
   
 
 
-  <br>
+
   
 ## GUI
 
@@ -24,19 +24,24 @@ For audio file inference only
 ## Preparing the environment
 
 
-The following commands need to be executed in the environment of Python version 3.8 or higher:
+* Install Python version +3.8 if you have not:
 
+* Execute these commands
+
+For Windows and Nvidia card users
 ```bash
 python -m pip install -U pip setuptools wheel
 pip install -U torch torchaudio --index-url https://download.pytorch.org/whl/cu118
 pip install -r requirements.txt
 ```
 
-Downlaod [hubert_base.pt](https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt/) and place it in the root folder
+<br>
+
+* Downlaod [hubert_base.pt](https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt/) and place it in the root folder
 
 <br>
  
-Then use this command to start RVC GUI:
+* Then use this command to start RVC GUI:
 ```bash
 python rvcgui.py
 ```
