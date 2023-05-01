@@ -71,12 +71,6 @@ if device not in ["cpu", "mps"]:
     if "16" in gpu_name or "P40"in gpu_name.upper() or "1070"in gpu_name or "1080"in gpu_name:
         print("16系显卡强制单精度")
         is_half = False
-        with open("configs/32k.json","r")as f:strr=f.read().replace("true","false")
-        with open("configs/32k.json","w")as f:f.write(strr)
-        with open("configs/40k.json","r")as f:strr=f.read().replace("true","false")
-        with open("configs/40k.json","w")as f:f.write(strr)
-        with open("configs/48k.json","r")as f:strr=f.read().replace("true","false")
-        with open("configs/48k.json","w")as f:f.write(strr)
         with open("trainset_preprocess_pipeline_print.py","r")as f:strr=f.read().replace("3.7","3.0")
         with open("trainset_preprocess_pipeline_print.py","w")as f:f.write(strr)
     gpu_mem=int(torch.cuda.get_device_properties(i_device).total_memory/1024/1024/1024+0.4)

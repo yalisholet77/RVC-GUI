@@ -4,7 +4,7 @@ from tkinter import filedialog
 import soundfile as sf
 import tkinter as tk
 import customtkinter as ctk
-from my_utils import load_audio
+
 import os
 import sys
 import torch
@@ -20,6 +20,7 @@ os.environ["TEMP"] = tmp
 warnings.filterwarnings("ignore")
 torch.manual_seed(114514)
 
+from my_utils import load_audio
 from vc_infer_pipeline import VC
 from fairseq import checkpoint_utils
 from scipy.io import wavfile
