@@ -44,7 +44,7 @@ def extract_model_from_zip(zip_path, output_dir):
 
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         for member in zip_ref.namelist():
-            if member.endswith('.pth') or member.endswith('.index'):
+            if (member.endswith('.pth') and not (os.path.basename(member).startswith("G_") or os.path.basename(member).startswith("D_")) and zip_ref.getinfo(member).file_size < 200*(1024**2)) or (member.endswith('.index') and not (os.path.basename(member).startswith("trained"))):
                 # Extract the file to the output folder
                 zip_ref.extract(member, output_folder)
 
@@ -338,7 +338,7 @@ def on_button_click():
     # Call the vc_single function with the user input values
     if model_loaded == True and os.path.isfile(input_audio):
         try:
-            loading_progress.pack(padx=10, pady=10)
+            loading_frame.pack(padx=10, pady=10)
             loading_progress.start()
             
             result, audio_opt = vc_single(
@@ -371,7 +371,7 @@ def on_button_click():
         result_state.configure(text_color="red")
 
     loading_progress.stop()
-    loading_progress.pack_forget()
+    loading_frame.pack_forget()
     result_state.pack(padx=10, pady=10, side="top")
     result_state.configure(text=message)
 
@@ -401,37 +401,33 @@ model_loaded = False
 
 
 def selected_model(choice):
-
     file_index_entry.delete(0, ctk.END)
-   
     model_dir = os.path.join(models_dir, choice)
-    pth_file = [f for f in os.listdir(model_dir) if os.path.isfile(
-        os.path.join(model_dir, f)) and f.endswith(".pth")]
-    if pth_file:
+    pth_files = [f for f in os.listdir(model_dir) if os.path.isfile(os.path.join(model_dir, f)) 
+                 and f.endswith(".pth") and not (f.startswith("G_") or f.startswith("D_"))
+                 and os.path.getsize(os.path.join(model_dir, f)) < 200*(1024**2)]
+    
+    if pth_files:
         global pth_file_path
-        pth_file_path = os.path.join(model_dir, pth_file[0])
-        npy_files = [f for f in os.listdir(model_dir) if os.path.isfile(
-            os.path.join(model_dir, f)) and f.endswith(".index")]
+        pth_file_path = os.path.join(model_dir, pth_files[0])
+        npy_files = [f for f in os.listdir(model_dir) if os.path.isfile(os.path.join(model_dir, f)) 
+                     and f.endswith(".index")]
         if npy_files:
             npy_files_dir = [os.path.join(model_dir, f) for f in npy_files]
             if len(npy_files_dir) == 1:
                 index_file = npy_files_dir[0]
                 print(f".pth file directory: {pth_file_path}")
                 print(f".index file directory: {index_file}")
-
                 file_index_entry.insert(0, index_file)
-
             else:
-                print(
-                    f"Incomplete set of .index files found in {model_dir}")
+                print(f"Incomplete set of .index files found in {model_dir}")
         else:
             print(f"No .index files found in {model_dir}")
-
         get_vc(pth_file_path, 0)
         global model_loaded
         model_loaded = True
     else:
-        print(f"No .pth files found in {model_dir}")
+        print(f"No eligible .pth files found in {model_dir}")
 
 
 def index_slider_event(value):
@@ -551,8 +547,14 @@ run_button = ctk.CTkButton(
 output_label = ctk.CTkLabel(right_frame, text="")
 
 # intiilizing loading progress bar widget
-loading_progress = ctk.CTkProgressBar(master=root, width=200)
+
+loading_frame = ctk.CTkFrame(master=root, width=200) 
+
+laoding_label = ctk.CTkLabel(loading_frame, text="Converting..., If the window is not responding, Please wait.")
+laoding_label.pack(padx=10, pady=10)
+loading_progress = ctk.CTkProgressBar(master=loading_frame, width=200)
 loading_progress.configure(mode="indeterminate")
+loading_progress.pack(padx=10, pady=10)
 
 # intiilizing result state label widget
 result_state = ctk.CTkLabel(
