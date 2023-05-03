@@ -17,7 +17,7 @@ For audio file inference only
   
 ## GUI
 
-![GUI](https://github.com/Tiger14n/RVC-GUI/raw/main/docs/GUI1.JPG)
+![GUI](https://github.com/Tiger14n/RVC-GUI/raw/main/docs/GUI.JPG)
   
   
 <br><br>
