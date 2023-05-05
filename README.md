@@ -53,11 +53,11 @@ RVC-GUI.bat
 # Loading models
 use the import button to import a model from a zip file, 
 * The .zip must contain the ".pth" weight file. 
-* The .zip is recommended to contain the feature retrieval files ".index, .npy"
+* The .zip is recommended to contain the feature retrieval files ".index"
 
 Or place the model manually in root/models
 ```
-Models
+models
 ├───Person1
 │   ├───xxxx.pth
 │   ├───xxxx.index
@@ -70,5 +70,14 @@ Models
 <br>
 
 
+<br> 
+
+### How to get models?.
+* Join the[ AI Hub](https://discord.gg/aihub) Discord 
+* [Community Models on HuggingFace](https://huggingface.co/QuickWick/Music-AI-Voices/tree/main) by Wicked aka QuickWick
+
+<br>
+
+K7#4523
 
 
