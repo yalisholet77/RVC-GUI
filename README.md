@@ -28,13 +28,18 @@ For audio file inference only
 
 * Execute these commands
 
-For Windows and Nvidia card users
+Windows with Nvidia cards
 ```bash
 python -m pip install -U pip setuptools wheel
 pip install -U torch torchaudio --index-url https://download.pytorch.org/whl/cu118
 pip install -r requirements.txt
 ```
-
+Other
+```
+python -m pip install -U pip setuptools wheel
+pip install -U torch torchaudio 
+pip install -r requirements.txt
+```
 <br>
 
 * Downlaod [hubert_base.pt](https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt/) and place it in the root folder
