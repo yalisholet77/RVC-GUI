@@ -33,6 +33,9 @@ import traceback
 import numpy as np
 import subprocess
 import zipfile
+from config import Config
+
+config = Config()
 
 def extract_model_from_zip(zip_path, output_dir):
     # Extract the folder name from the zip file path
@@ -71,8 +74,9 @@ def get_full_path(path):
     return os.path.abspath(path)
 
 hubert_model = None
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-is_half = True if device == "cuda" else False
+device = config.device
+print(device)
+is_half = config.is_half
 
 def load_hubert():
     global hubert_model
@@ -81,7 +85,7 @@ def load_hubert():
         suffix="",
     )
     hubert_model = models[0]
-    hubert_model = hubert_model.to(device)
+    hubert_model = hubert_model.to(config.device)
     if is_half:
         hubert_model = hubert_model.half()
     else:
@@ -97,6 +101,7 @@ def vc_single(
     f0_method,
     file_index,
     index_rate,
+    crepe_hop_length,
     output_path=None,
 ):  # spk_item, input_audio0, vc_transform0,f0_file,f0method0
     global tgt_sr, net_g, vc, hubert_model
@@ -129,6 +134,7 @@ def vc_single(
             file_index,
             index_rate,
             if_f0,
+            crepe_hop_length,
             f0_file=f0_file,
         )
         print(
@@ -233,12 +239,12 @@ def get_vc(weight_path, sid):
         net_g = SynthesizerTrnMs256NSFsid_nono(*cpt["config"])
     del net_g.enc_q
     print(net_g.load_state_dict(cpt["weight"], strict=False))  # 不加这一行清不干净, 真奇葩
-    net_g.eval().to(device)
+    net_g.eval().to(config.device)
     if is_half:
         net_g = net_g.half()
     else:
         net_g = net_g.float()
-    vc = VC(tgt_sr, device, is_half)
+    vc = VC(tgt_sr, config)
     n_spk = cpt["config"][-3]
     return {"visible": True, "maximum": n_spk, "__type__": "update"}
 
@@ -326,6 +332,7 @@ def on_button_click():
     sid = sid_entry.get()
     input_audio = input_audio_entry.get()
     f0_pitch = f0_pitch_entry.get()
+    crepe_hop_length = round((crepe_hop_length_entry.get()) * 64)
     f0_file = f0_file_entry.get()
     f0_method = f0_method_entry.get()
     file_index = file_index_entry.get()
@@ -342,7 +349,7 @@ def on_button_click():
             loading_progress.start()
             
             result, audio_opt = vc_single(
-                0, input_audio, f0_pitch, None, f0_method, file_index, index_rate, output_file)
+                0, input_audio, f0_pitch, None, f0_method, file_index, index_rate,crepe_hop_length, output_file)
             # output_label.configure(text=result + "\n saved at" + output_file)
             print(os.path.join(output_file))
             if os.path.exists(output_file) and os.path.getsize(output_file) > 0:
@@ -377,11 +384,12 @@ def on_button_click():
 
 
 def browse_file():
-    filepath = filedialog.askopenfilename(
+    filepath = filedialog.askopenfilename (
         filetypes=[("Audio Files", "*.wav;*.mp3")])
     filepath = os.path.normpath(filepath)  # Normalize file path
     input_audio_entry.delete(0, tk.END)
     input_audio_entry.insert(0, filepath)
+
 
 
 def start_processing():
@@ -392,10 +400,19 @@ def start_processing():
 
 # Create tkinter window and widgets
 root = ctk.CTk()
-
+ctk.set_appearance_mode("dark")
 root.title("RVC GUI")
-root.geometry("800x800")
-root.resizable(False, False)
+# Get screen dimensions
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+# Set GUI dimensions as a percentage of screen size
+
+gui_height = int(screen_height * 0.85)  # 80% of screen height
+gui_dimensions = f"800x{gui_height}"
+
+root.geometry(gui_dimensions)
+root.resizable(False, True)
 
 model_loaded = False
 
@@ -418,7 +435,7 @@ def selected_model(choice):
                 index_file = npy_files_dir[0]
                 print(f".pth file directory: {pth_file_path}")
                 print(f".index file directory: {index_file}")
-                file_index_entry.insert(0, index_file)
+                file_index_entry.insert(0, os.path.normpath(index_file))
             else:
                 print(f"Incomplete set of .index files found in {model_dir}")
         else:
@@ -439,16 +456,37 @@ def index_slider_event(value):
 def pitch_slider_event(value):
     f0_pitch_label.configure(text='Pitch: %s' % round(value))
   #  print(value)
+  
+def crepe_hop_length_slider_event(value):
+    crepe_hop_length_label.configure(text='crepe hop: %s' % round((value) * 64))
+  #  print(value)
 
+
+# hide crepe hop length slider if crepe is not selected
+def crepe_hop_length_slider_visibility(value):
+    if value == "crepe" or value == "crepe-tiny":
+        crepe_hop_length_label.grid(row=2, column=0, padx=10, pady=5, )
+        crepe_hop_length_entry.grid(row=2, column=1, padx=10, pady=5, )
+    else:
+        crepe_hop_length_label.grid_remove()
+        crepe_hop_length_entry.grid_remove()
 
 def update_config(selected):
     global device, is_half  # declare newconfig as a global variable
     if selected == "GPU":
         device = "cuda:0"
-        is_half = True
+       # is_half = True
     else:
-        device = "cpu"
-        is_half = False
+        if torch.backends.mps.is_available():
+         device = "mps"
+       #  is_half = False
+        else: 
+            device = "cpu"
+            is_half = False
+
+    config.device = device
+    config.is_half = is_half
+    
 
     if "pth_file_path" in globals():
         load_hubert()
@@ -513,6 +551,12 @@ f0_pitch_entry = ctk.CTkSlider(
     pitch_frame, from_=-20, to=20, number_of_steps=100, command=pitch_slider_event, )
 f0_pitch_entry.set(0)
 
+#  intiilizing crepe hop length widget
+crepe_hop_length_label = ctk.CTkLabel(pitch_frame, text="crepe hop: 128")
+crepe_hop_length_entry = ctk.CTkSlider(
+    pitch_frame, from_=1, to=8, number_of_steps=7, command=crepe_hop_length_slider_event)
+crepe_hop_length_entry.set(2)
+
 # intiilizing f0 file widget
 f0_file_label = ctk.CTkLabel(right_frame, text="F0 file (Optional/Not Tested)")
 f0_file_entry = ctk.CTkEntry(right_frame, width=250)
@@ -521,8 +565,8 @@ f0_file_entry = ctk.CTkEntry(right_frame, width=250)
 f0_method_label = ctk.CTkLabel(
     pitch_frame, text="F0 method")
 f0_method_entry = ctk.CTkSegmentedButton(
-    pitch_frame, height=40, values=["harvest", "pm"])
-f0_method_entry.set("harvest")
+    pitch_frame, height=40, values=["dio", "pm","harvest", "crepe", "crepe-tiny" ], command=crepe_hop_length_slider_visibility)
+f0_method_entry.set("dio")
 
 # intiilizing index file widget
 file_index_label = ctk.CTkLabel(right_frame, text=".index File (Recommended)")
@@ -541,10 +585,13 @@ index_rate_label = ctk.CTkLabel(
 
 # intiilizing run button widget
 run_button = ctk.CTkButton(
-    left_frame, fg_color="green", hover_color="darkgreen", text="Convert voice", command=start_processing)
+    left_frame, fg_color="green", hover_color="darkgreen", text="Convert", command=start_processing)
 
 # intiilizing output label widget
 output_label = ctk.CTkLabel(right_frame, text="")
+
+# intiilizing Notes label widget
+notes_label = ctk.CTkLabel(left_frame, justify="left", text_color="#8A8A8A", text="Tips: \n 1. harvest and crepe are the highest quality, but also the slowest methods. \n 2. dio and pm are the lightest and fastest methods, but also the lowest quality.")
 
 # intiilizing loading progress bar widget
 
@@ -558,16 +605,16 @@ loading_progress.pack(padx=10, pady=10)
 
 # intiilizing result state label widget
 result_state = ctk.CTkLabel(
-    root, text="", fg_color="#1C1C1C", height=50, width=100, corner_radius=10)
+    root, text="", height=50, width=100, corner_radius=10)
 
 # intiilizing change device widget
-change_device_label = ctk.CTkLabel( right_frame, text="Processing device")
+change_device_label = ctk.CTkLabel( right_frame, text="Processing mode")
 change_device = ctk.CTkSegmentedButton(
     right_frame, command=lambda value: update_config(value))
 change_device.configure(
     values=["GPU", "CPU"])
 
-if "cpu" in device.type.lower() or device.type.lower() == "cpu":
+if "cpu" in device.lower() or device.lower() == "cpu":
     change_device.set("CPU")
     change_device.configure(state="disabled")
    
@@ -590,6 +637,7 @@ import_moodels_button = ctk.CTkButton(right_frame, fg_color="darkred", hover_col
 
 
 # Packing widgets into window
+notes_label.grid(row=5, column=0, padx=10, pady=10)
 change_device_label.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
 change_device.grid(row=2, column=0, columnspan=2, padx=10, pady=5)
 last_output_label.grid( pady=10, row=0, column=0)
@@ -604,8 +652,10 @@ input_audio_label.grid(padx=10, pady=10, row=0, column=0)
 input_audio_entry.grid(padx=10, pady=10, row=0, column=1)
 f0_method_label.grid(padx=10, pady=10, row=0, column=0)
 f0_method_entry.grid(padx=10, pady=10, row=0, column=1)
-f0_pitch_label.grid(padx=10, pady=10, row=1, column=0)
-f0_pitch_entry.grid(padx=10, pady=10, row=1, column=1)
+#crepe_hop_length_label.grid(padx=10, pady=10, row=1, column=0)
+#crepe_hop_length_entry.grid(padx=10, pady=10, row=1, column=1)
+f0_pitch_label.grid(padx=10, pady=10, row=3, column=0)
+f0_pitch_entry.grid(padx=10, pady=10, row=3, column=1)
 f0_file_label.grid(padx=10, pady=10)
 f0_file_entry.grid(padx=10, pady=10)
 file_index_label.grid(padx=10, pady=10)
@@ -614,7 +664,7 @@ file_index_entry.grid(padx=10, pady=10)
 
 index_rate_label.grid(padx=10, pady=10)
 index_rate_entry.grid(padx=10, pady=10)
-run_button.grid(padx=30, pady=30)
+run_button.grid(padx=30, pady=30, row=4, column=0, columnspan=2)
 output_label.grid(padx=0, pady=10)
 
 root.mainloop()
