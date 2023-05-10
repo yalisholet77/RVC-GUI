@@ -331,7 +331,7 @@ def on_button_click():
     # Get values from user input widgets
     sid = sid_entry.get()
     input_audio = input_audio_entry.get()
-    f0_pitch = f0_pitch_entry.get()
+    f0_pitch = round(f0_pitch_entry.get())
     crepe_hop_length = round((crepe_hop_length_entry.get()) * 64)
     f0_file = f0_file_entry.get()
     f0_method = f0_method_entry.get()
