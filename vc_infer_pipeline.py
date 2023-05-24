@@ -181,6 +181,7 @@ class VC(object):
         index,
         big_npy,
         index_rate,
+        version,
     ):  # ,file_index,file_big_npy
         feats = torch.from_numpy(audio0)
         if self.is_half:
@@ -196,12 +197,12 @@ class VC(object):
         inputs = {
             "source": feats.to(self.device),
             "padding_mask": padding_mask,
-            "output_layer": 9,  # layer 9
+            "output_layer": 9 if version == "v1" else 12,
         }
         t0 = ttime()
         with torch.no_grad():
             logits = model.extract_features(**inputs)
-            feats = model.final_proj(logits[0])
+            feats = model.final_proj(logits[0]) if version == "v1" else logits[0]
 
         if (
             isinstance(index, type(None)) == False
@@ -239,19 +240,14 @@ class VC(object):
         with torch.no_grad():
             if pitch != None and pitchf != None:
                 audio1 = (
-                    (net_g.infer(feats, p_len, pitch, pitchf, sid)[0][0, 0] * 32768)
+                    (net_g.infer(feats, p_len, pitch, pitchf, sid)[0][0, 0])
                     .data.cpu()
                     .float()
                     .numpy()
-                    .astype(np.int16)
                 )
             else:
                 audio1 = (
-                    (net_g.infer(feats, p_len, sid)[0][0, 0] * 32768)
-                    .data.cpu()
-                    .float()
-                    .numpy()
-                    .astype(np.int16)
+                    (net_g.infer(feats, p_len, sid)[0][0, 0]).data.cpu().float().numpy()
                 )
         del feats, p_len, padding_mask
         if torch.cuda.is_available():
@@ -274,6 +270,7 @@ class VC(object):
         # file_big_npy,
         index_rate,
         if_f0,
+        version,
         crepe_hop_length,
         f0_file=None,
     ):
@@ -351,6 +348,7 @@ class VC(object):
                         index,
                         big_npy,
                         index_rate,
+                        version,
                     )[self.t_pad_tgt : -self.t_pad_tgt]
                 )
             else:
@@ -366,6 +364,7 @@ class VC(object):
                         index,
                         big_npy,
                         index_rate,
+                         version,
                     )[self.t_pad_tgt : -self.t_pad_tgt]
                 )
             s = t
@@ -382,6 +381,7 @@ class VC(object):
                     index,
                     big_npy,
                     index_rate,
+                     version,
                 )[self.t_pad_tgt : -self.t_pad_tgt]
             )
         else:
@@ -397,6 +397,7 @@ class VC(object):
                     index,
                     big_npy,
                     index_rate,
+                     version,
                 )[self.t_pad_tgt : -self.t_pad_tgt]
             )
         audio_opt = np.concatenate(audio_opt)
