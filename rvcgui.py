@@ -24,7 +24,8 @@ from my_utils import load_audio
 from vc_infer_pipeline import VC
 from fairseq import checkpoint_utils
 from scipy.io import wavfile
-from infer_pack.models import SynthesizerTrnMs256NSFsid, SynthesizerTrnMs256NSFsid_nono, SynthesizerTrnMs768NSFsid_nono, SynthesizerTrnMs768NSFsid
+from infer_pack.models import SynthesizerTrnMs256NSFsid, SynthesizerTrnMs256NSFsid_nono
+from infer_pack.modelsv2 import SynthesizerTrnMs768NSFsid_nono, SynthesizerTrnMs768NSFsid
 from multiprocessing import cpu_count
 import threading
 from time import sleep
