@@ -19,9 +19,15 @@ For audio file inference only
 
 ![GUI](https://github.com/Tiger14n/RVC-GUI/raw/main/docs/GUI.JPG)
   
+  <br><br>
+ ## for Windwos users just follow this 
+  [https://github.com/Tiger14n/RVC-GUI/releases/tag/Windows-pkg](https://github.com/Tiger14n/RVC-GUI/releases/tag/Windows-pkg)
   
 <br><br>
 ## Preparing the environment
+  
+  
+
 
 
 * Install Python version +3.8 if you have not:
