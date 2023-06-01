@@ -326,8 +326,10 @@ def browse_zip():
     refresh_model_list()
     
 def get_output_path(file_path):
-    print(file_path)
+    
     if not os.path.exists(file_path):
+        # change the file extension to .wav
+        
         return file_path  # File path does not exist, return as is
 
     # Split file path into directory, base filename, and extension
@@ -342,6 +344,8 @@ def get_output_path(file_path):
         new_file_name = f"{file_name}_RVC_{index}{file_ext}"
         new_file_path = os.path.join(dir_name, new_file_name)
         if not os.path.exists(new_file_path):
+            # change the file extension to .wav
+            new_file_path = os.path.splitext(new_file_path)[0] + ".wav"
             return new_file_path  # Found new file path, return it
         index += 1
     
