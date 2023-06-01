@@ -20,7 +20,7 @@ For audio file inference only
 ![GUI](https://github.com/Tiger14n/RVC-GUI/raw/main/docs/GUI.JPG)
  <br><br>
   
-## Direct setup for Wndows users
+## Direct setup for Windows users
 ## [Windows-pkg](https://github.com/Tiger14n/RVC-GUI/releases/tag/Windows-pkg)
   
 <br><br>
