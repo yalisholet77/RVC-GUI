@@ -20,10 +20,10 @@ os.environ["TEMP"] = tmp
 warnings.filterwarnings("ignore")
 torch.manual_seed(114514)
 
-from my_utils import load_audio
 from vc_infer_pipeline import VC
 from fairseq import checkpoint_utils
 from scipy.io import wavfile
+from my_utils import load_audio
 from infer_pack.models import SynthesizerTrnMs256NSFsid, SynthesizerTrnMs256NSFsid_nono
 from infer_pack.modelsv2 import SynthesizerTrnMs768NSFsid_nono, SynthesizerTrnMs768NSFsid
 from multiprocessing import cpu_count
@@ -37,6 +37,8 @@ import zipfile
 from config import Config
 
 config = Config()
+
+
 
 def extract_model_from_zip(zip_path, output_dir):
     # Extract the folder name from the zip file path
@@ -145,7 +147,7 @@ def vc_single(
         )
 
         if output_path is not None:
-            sf.write(output_path, audio_opt, tgt_sr)
+            sf.write(output_path, audio_opt, tgt_sr, format='WAV')
 
         return "Success", (tgt_sr, audio_opt)
     except:
