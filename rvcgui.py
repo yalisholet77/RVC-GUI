@@ -341,10 +341,13 @@ def get_output_path(file_path):
 
     # Increment index until a new file path is found
     while True:
+        new_dir = f"{dir_name}\\{chosenOne}\\"
         new_file_name = f"{file_name}_RVC_{index}{file_ext}"
-        new_file_path = os.path.join(dir_name, new_file_name)
+        new_file_path = os.path.join(new_dir, new_file_name)
         if not os.path.exists(new_file_path):
             # change the file extension to .wav
+            if not os.path.exists(new_dir):
+                os.makedirs(new_dir)
             new_file_path = os.path.splitext(new_file_path)[0] + ".wav"
             return new_file_path  # Found new file path, return it
         index += 1
@@ -442,8 +445,9 @@ root.resizable(False, True)
 
 model_loaded = False
 
-
 def selected_model(choice):
+    global chosenOne
+    chosenOne = choice
     file_index_entry.delete(0, ctk.END)
     model_dir = os.path.join(models_dir, choice)
     pth_files = [f for f in os.listdir(model_dir) if os.path.isfile(os.path.join(model_dir, f)) 
