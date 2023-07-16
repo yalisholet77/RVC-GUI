@@ -414,7 +414,7 @@ def on_button_click():
 
 def browse_file():
     filepath = filedialog.askopenfilename (
-        filetypes=[("Audio Files", "*.wav;*.mp3")])
+        filetypes=[("Audio Files", ["*.mp3","*.wav"])])
     filepath = os.path.normpath(filepath)  # Normalize file path
     input_audio_entry.delete(0, tk.END)
     input_audio_entry.insert(0, filepath)
