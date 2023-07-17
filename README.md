@@ -37,11 +37,19 @@ python -m pip install -U pip setuptools wheel
 pip install -U torch torchaudio --index-url https://download.pytorch.org/whl/cu118
 pip install -r requirements.txt
 ```
+
 Other
 ```
 python -m pip install -U pip setuptools wheel
 pip install -U torch torchaudio 
 pip install -r requirements.txt
+```
+
+Apple silicon Macs fix
+```
+pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+
+export PYTORCH_ENABLE_MPS_FALLBACK=1
 ```
 <br>
 
