@@ -43,6 +43,13 @@ python -m pip install -U pip setuptools wheel
 pip install -U torch torchaudio 
 pip install -r requirements.txt
 ```
+
+Apple silicon Macs fix
+```
+pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+```
 <br>
 
 * Downlaod [hubert_base.pt](https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt/) and place it in the root folder
